@@ -1,0 +1,8 @@
+name: Bewerbung
+version: 1.0
+author: TrustMarco
+main: com.trustmarco.bewerbungsplugin.Main
+commands:
+  punkte:
+  worldanalyse:
+    aliases: [wa]
