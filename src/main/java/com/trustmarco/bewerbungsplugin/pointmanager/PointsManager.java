@@ -11,12 +11,35 @@ import java.util.UUID;
 
 public class PointsManager {
 
+    /**
+     *
+     * Punkte-Manager
+     * Zuständig für die Verwaltung der einzelnen Punkte Konten, der jeweilgen Spieler (UUID´s)
+     *
+     */
+
     private UUID uuid;
     private HashMap<UUID, Integer> points = Main.getInstance().getCache_points();
+
+    /**
+     * Konstruktor Methode
+     *
+     * @param uuid UUID dies Spielers
+     */
 
     public PointsManager(final UUID uuid) {
         this.uuid = uuid;
     }
+
+
+    /**
+     * Es wird geprüft ob sich die UUID, bzw. der Spieler bereits in einen Zwischenspeicher befindet.
+     * Dannach wird abgefragt, ob die UUID in der Tabelle Registiert ist
+     * Im Folgenden werden die Punkte aus der Tabelle abgerufen und in einen Zwischenspeicher gespeichert.
+     * Diese werden schließlich zurückgegeben.
+     *
+     * @return Punkte eines Spielers (UUID)
+     */
 
     public Integer getPoints() {
         if (this.points.containsKey(this.uuid)) return this.points.get(this.uuid);
@@ -38,9 +61,21 @@ public class PointsManager {
         return Main.getInstance().getStandard_points();
     }
 
+    /**
+     * Die Punkte bzw. einer UUID werden in dem jeweiligen Zwischenspeicher abgespeichert.
+     *
+     * @param number Anzahl der Punkte, die gesetzt werden sollen
+     */
+
     public void setPoints(final Integer number) {
         this.points.put(this.uuid, number);
     }
+
+    /**
+     * Zunächst wird geprüft, ob sich das Punktekonto des Spielers verändert hat.
+     * Dannach wird in Frage gestellt, ob in der Tabelle bereits ein Eintrag bzg. dieser UUID vorhanden ist.
+     * Folgend wird die Punkte-Anzahl aktualisiert.
+     */
 
     public void synchronize() {
         if (this.points.containsKey(this.uuid)) {
@@ -66,6 +101,12 @@ public class PointsManager {
             }
         }
     }
+
+    /**
+     * Die Tabelle wird durchsucht ob ein Eintrag bzg. der UUID zu finden ist.
+     *
+     * @return Ob ein Eintrag bzg. der UUID vorhanden ist.
+     */
 
     public boolean exists() {
         try {

@@ -17,15 +17,15 @@ public class PuntkeCommand implements CommandExecutor {
         if (args.length == 1) {
             String name = args[0];
             UUID uuid = Bukkit.getOfflinePlayer(name).getUniqueId();
-            if (new PointsManager(uuid).exists() || Main.getInstance().getCache_points().containsKey(uuid)) {
-                sender.sendMessage(Main.getInstance().getPrefix() + "Der Spieler §e" + name + "§7 besitzt §e" + new PointsManager(uuid).getPoints() + " Punkte§7.");
+            if (Main.getInstance().getCache_points().containsKey(uuid) || Main.getInstance().getPointsManager(uuid).exists()) {
+                sender.sendMessage(Main.getInstance().getPrefix() + "Der Spieler §e" + name + "§7 besitzt §e" + Main.getInstance().getPointsManager(uuid).getPoints() + " Punkte§7.");
             } else {
                 sender.sendMessage(Main.getInstance().getPrefix() + "§cDieser Spieler konnte nicht gefunden werden.");
             }
         } else {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
-                player.sendMessage(Main.getInstance().getPrefix() + "Du besitzt §e" + new PointsManager(player.getUniqueId()).getPoints() + " Punkte§7.");
+                player.sendMessage(Main.getInstance().getPrefix() + "Du besitzt §e" + Main.getInstance().getPointsManager(player.getUniqueId()).getPoints() + " Punkte§7.");
             }
         }
 

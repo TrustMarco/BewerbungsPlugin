@@ -1,21 +1,12 @@
 package com.trustmarco.bewerbungsplugin.commands;
 
 import com.trustmarco.bewerbungsplugin.Main;
-import com.trustmarco.bewerbungsplugin.mysql.MySQL;
 import com.trustmarco.bewerbungsplugin.worldanalyse.WorldAnalyse;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class WorldAnalyseCommand implements CommandExecutor {
 
@@ -29,7 +20,7 @@ public class WorldAnalyseCommand implements CommandExecutor {
         final Player player = (Player) sender;
 
         if (args.length == 1) {
-            if (!(Main.getInstance().getCooldown().contains(player))) {
+            if (this.canRun(player)) {
                 try {
                     int radius = Integer.parseInt(args[0]);
                     WorldAnalyse worldAnalyse = new WorldAnalyse(player.getLocation(), radius);
@@ -42,15 +33,7 @@ public class WorldAnalyseCommand implements CommandExecutor {
                     int animals_percent = (animals * 100) / entitys;
 
                     player.sendMessage(Main.getInstance().getPrefix() + "In deinem Umfeld befindet sich derzeit §e" + players + "(" + players_percent + "%) Spieler§7. Außerdem befinden sich in deinem Umfeld §e" + animals + "(" + animals_percent + "%)Tiere§7. Und wir haben in deinem Umfeld §e" + monstors + "(" + monstors_percent + "%) Monster §7gefunden");
-                    Main.getInstance().getCooldown().add(player);
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Main.getInstance(), new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Main.getInstance().getCooldown().contains(player)) {
-                                Main.getInstance().getCooldown().remove(player);
-                            }
-                        }
-                    }, 20*5L);
+                    Main.getInstance().getCooldown().put(player, (System.currentTimeMillis()+5000));
                 } catch (NumberFormatException e) {
                     player.sendMessage(Main.getInstance().getPrefix() + "§cBitte verwende eine realistische Zahl!");
                 }
@@ -61,6 +44,23 @@ public class WorldAnalyseCommand implements CommandExecutor {
             player.sendMessage(Main.getInstance().getPrefix() + "Nutze §e/wa [Radius]");
         }
 
+        return true;
+    }
+
+    /**
+     * Prüft, ob der Cooldown abgelaufen ist
+     *
+     * @param player Spieler
+     * @return Boolean
+     */
+
+    private boolean canRun(final Player player) {
+        if (Main.getInstance().getCooldown().containsKey(player)) {
+            Long millis = Main.getInstance().getCooldown().get(player);
+            if (millis >= System.currentTimeMillis()) {
+                return false;
+            }
+        }
         return true;
     }
 }

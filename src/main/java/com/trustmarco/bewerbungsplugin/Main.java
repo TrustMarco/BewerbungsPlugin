@@ -5,6 +5,7 @@ import com.trustmarco.bewerbungsplugin.commands.WorldAnalyseCommand;
 import com.trustmarco.bewerbungsplugin.listeners.DeathListener;
 import com.trustmarco.bewerbungsplugin.listeners.QuitListener;
 import com.trustmarco.bewerbungsplugin.mysql.MySQL;
+import com.trustmarco.bewerbungsplugin.pointmanager.PointsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -22,15 +23,36 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Bewerbungs-Plugin für Spieleoase.net
+ *
+ * @author TrustMarco
+ * @version 1.0
+ *
+ */
+
 public class Main extends JavaPlugin {
+
+
+    /**
+     *
+     * Hauptklasse
+     *
+     */
+
 
     public static Main instance;
     private MySQL mySQL;
+    /**
+     * Thread, der speziell für MySQL Anwendungen genutzt wird.
+     */
     private ExecutorService executorService = Executors.newFixedThreadPool(2);
     private HashMap<UUID, Integer> cache_points = new HashMap<UUID, Integer>();
-    private List<Player> cooldown = new ArrayList<Player>();
+    private HashMap<Player, Long> cooldown = new HashMap<>();
+    private HashMap<UUID, PointsManager> point_manager = new HashMap<>();
     private String prefix;
     private Integer standard_points;
+
 
     @Override
     public void onEnable() {
@@ -41,6 +63,15 @@ public class Main extends JavaPlugin {
     public void onDisable() {
         super.onDisable();
     }
+
+    /**
+     * Instanz der Hauptklasse wird festgelegt.
+     * Der Prefix wird ebenfalls festgelegt.
+     * Eine File wird erstellt.
+     * Verbindung zu MySQL wird aufgebaut.
+     * Sämtliche Commands und Events werden registiert.
+     * Die Standart-Punkte werden festgelegt.
+     */
 
     private void init() {
         this.setInstance(this);
@@ -57,10 +88,18 @@ public class Main extends JavaPlugin {
         this.standard_points = yamlConfiguration.getInt("standard_points");
     }
 
+    /**
+     * Commands werden registiert
+     */
+
     private void registerCommands() {
         this.getInstance().getCommand("worldanalyse").setExecutor(new WorldAnalyseCommand());
         this.getInstance().getCommand("punkte").setExecutor(new PuntkeCommand());
     }
+
+    /**
+     * Events werden registiert
+     */
 
     private void registerListeners() {
         PluginManager pluginManager = Bukkit.getPluginManager();
@@ -73,17 +112,37 @@ public class Main extends JavaPlugin {
         return instance;
     }
 
+    /**
+     * Instanz der Hauptklasse wird gesetzt.
+     *
+     * @param instance Hauptklasse
+     */
+
     public static void setInstance(Main instance) {
         Main.instance = instance;
     }
+
+    /**
+     * @return Prefix
+     */
 
     public String getPrefix() {
         return prefix;
     }
 
+    /**
+     * Prefix wird gesetzt.
+     *
+     * @param prefix Prefix
+     */
+
     public void setPrefix(String prefix) {
         this.prefix = prefix;
     }
+
+    /**
+     * Eine File wird erstellt und mit Einträgen bestückt.
+     */
 
     private void createConfigFile() {
         File file = new File("plugins//BewerbungsPlugin//config.yml");
@@ -105,6 +164,11 @@ public class Main extends JavaPlugin {
     public Integer getStandard_points() {
         return standard_points;
     }
+
+    /**
+     * Verbindungsaufbau zu einer MySQL-Tabelle.
+     * Die Anmelde-Daten werden direkt aus einer File abgerufen
+     */
 
     private boolean connectToMySQL() {
         File file = new File("plugins//BewerbungsPlugin//config.yml");
@@ -134,7 +198,21 @@ public class Main extends JavaPlugin {
         return cache_points;
     }
 
-    public List<Player> getCooldown() {
+    public HashMap<Player, Long> getCooldown() {
         return cooldown;
+    }
+
+    /**
+     * Wenn die Instanz bereits im Zwischenspeicher ist, wird die aus dem Zwischenspeicher
+     * zurückgegeben, wenn nicht wird einen neue erstellt.
+     *
+     * @param uuid UUID des Spielers
+     * @return Instanz der Punkte-Manager Klasse
+     */
+
+    public PointsManager getPointsManager(final UUID uuid) {
+        if (this.point_manager.containsKey(uuid)) return this.point_manager.get(uuid);
+        this.point_manager.put(uuid, new PointsManager(uuid));
+        return this.point_manager.get(uuid);
     }
 }
